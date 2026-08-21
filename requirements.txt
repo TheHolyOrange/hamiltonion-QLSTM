@@ -1,0 +1,9 @@
+torch>=2.13
+pennylane>=0.45
+pandas>=3.0
+scikit-learn>=1.9
+matplotlib>=3.11
+optuna>=4.9
+reportlab>=5.0
+numpy>=2.5
+scipy>=1.18
