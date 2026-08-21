@@ -1,4 +1,5 @@
 """Training / evaluation loop for QLSTMRegressor on ETTh1."""
+import os
 import time
 import torch
 from torch import nn
@@ -56,19 +57,36 @@ def train_model(
     patience=6,
     verbose=True,
     log_fn=print,
+    checkpoint_path=None,
 ):
+    """If checkpoint_path is given, progress (model/optimizer/epoch/history/best
+    state) is saved to it after every epoch, and training resumes from it on
+    the next call if the file already exists (interrupted-run recovery)."""
     train_loader, val_loader, test_loader = make_loaders(train_ds, val_ds, test_ds, batch_size)
 
     model = QLSTMRegressor(**model_cfg)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    start_epoch = 0
     history = {"train_loss": [], "val_loss": []}
     best_val = float("inf")
     best_state = None
     epochs_no_improve = 0
 
-    for epoch in range(num_epochs):
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        ckpt = torch.load(checkpoint_path, map_location="cpu")
+        model.load_state_dict(ckpt["model_state"])
+        optimizer.load_state_dict(ckpt["optimizer_state"])
+        start_epoch = ckpt["epoch"] + 1
+        history = ckpt["history"]
+        best_val = ckpt["best_val"]
+        best_state = ckpt["best_state"]
+        epochs_no_improve = ckpt["epochs_no_improve"]
+        if verbose:
+            log_fn(f"resumed from checkpoint at epoch {start_epoch} (best_val={best_val:.5f})")
+
+    for epoch in range(start_epoch, num_epochs):
         t0 = time.time()
         train_loss = run_epoch(model, train_loader, loss_fn, optimizer)
         val_loss = run_epoch(model, val_loader, loss_fn, optimizer=None)
@@ -79,6 +97,7 @@ def train_model(
             log_fn(f"epoch {epoch+1}/{num_epochs}  train_loss={train_loss:.5f}  "
                    f"val_loss={val_loss:.5f}  ({time.time()-t0:.1f}s)")
 
+        stop_early = False
         if val_loss < best_val - 1e-6:
             best_val = val_loss
             best_state = {k: v.clone() for k, v in model.state_dict().items()}
@@ -88,7 +107,21 @@ def train_model(
             if epochs_no_improve >= patience:
                 if verbose:
                     log_fn(f"early stopping at epoch {epoch+1} (best val_loss={best_val:.5f})")
-                break
+                stop_early = True
+
+        if checkpoint_path:
+            torch.save({
+                "epoch": epoch,
+                "model_state": model.state_dict(),
+                "optimizer_state": optimizer.state_dict(),
+                "history": history,
+                "best_val": best_val,
+                "best_state": best_state,
+                "epochs_no_improve": epochs_no_improve,
+            }, checkpoint_path)
+
+        if stop_early:
+            break
 
     if best_state is not None:
         model.load_state_dict(best_state)

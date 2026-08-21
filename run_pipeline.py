@@ -76,6 +76,7 @@ def main():
         patience=FINAL_PATIENCE,
         verbose=True,
         log_fn=log,
+        checkpoint_path="results/checkpoints/final_training_state.pt",
     )
     train_time = time.time() - t0
     log(f"final training elapsed: {train_time:.1f}s")
