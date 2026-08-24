@@ -1,0 +1,103 @@
+{
+  "best_params": {
+    "n_qubits": 6,
+    "n_qlayers": 2,
+    "hidden_size": 8,
+    "lr": 0.01,
+    "batch_size": 32
+  },
+  "best_val_loss": 0.04918660278781317,
+  "n_trials": 8,
+  "search_epochs": 4,
+  "elapsed_seconds": 4652.510467290878,
+  "trials": [
+    {
+      "number": 0,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 1,
+        "hidden_size": 8,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.05842746183043346
+    },
+    {
+      "number": 1,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 1,
+        "hidden_size": 8,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.05842746183043346
+    },
+    {
+      "number": 2,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 2,
+        "hidden_size": 8,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.04918660278781317
+    },
+    {
+      "number": 3,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 1,
+        "hidden_size": 8,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.05842746183043346
+    },
+    {
+      "number": 4,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 2,
+        "hidden_size": 8,
+        "lr": 0.005,
+        "batch_size": 32
+      },
+      "val_loss": 0.05713862681295723
+    },
+    {
+      "number": 5,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 1,
+        "hidden_size": 8,
+        "lr": 0.005,
+        "batch_size": 32
+      },
+      "val_loss": 0.09963779849931598
+    },
+    {
+      "number": 6,
+      "params": {
+        "n_qubits": 6,
+        "n_qlayers": 2,
+        "hidden_size": 16,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.06318505934905261
+    },
+    {
+      "number": 7,
+      "params": {
+        "n_qubits": 4,
+        "n_qlayers": 1,
+        "hidden_size": 8,
+        "lr": 0.01,
+        "batch_size": 32
+      },
+      "val_loss": 0.11010850127786398
+    }
+  ]
+}

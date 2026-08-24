@@ -1,0 +1,33 @@
+=== Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
+features: ['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+train/val/test rows: 2450/525/525
+train/val/test windows: 2426/501/501
+
+=== Hyperparameter search: 8 trials x 4 epochs ===
+HPO elapsed: 4655.5s
+best params: {'n_qubits': 6, 'n_qlayers': 2, 'hidden_size': 8, 'lr': 0.01, 'batch_size': 32}
+
+=== Final training: up to 30 epochs, patience=8 ===
+epoch 1/30  train_loss=0.38442  val_loss=0.15080  (220.3s)
+epoch 2/30  train_loss=0.04380  val_loss=0.06130  (222.5s)
+epoch 3/30  train_loss=0.04196  val_loss=0.06318  (223.2s)
+epoch 4/30  train_loss=0.03709  val_loss=0.04919  (223.7s)
+epoch 5/30  train_loss=0.03747  val_loss=0.04617  (229.8s)
+epoch 6/30  train_loss=0.03718  val_loss=0.03926  (223.5s)
+epoch 7/30  train_loss=0.03656  val_loss=0.04484  (224.3s)
+epoch 8/30  train_loss=0.03606  val_loss=0.04680  (221.9s)
+epoch 9/30  train_loss=0.03629  val_loss=0.04275  (220.9s)
+epoch 10/30  train_loss=0.03566  val_loss=0.05244  (220.8s)
+epoch 11/30  train_loss=0.03518  val_loss=0.04470  (221.2s)
+epoch 12/30  train_loss=0.03495  val_loss=0.05733  (220.9s)
+epoch 13/30  train_loss=0.03655  val_loss=0.05127  (221.7s)
+epoch 14/30  train_loss=0.03515  val_loss=0.05284  (220.2s)
+early stopping at epoch 14 (best val_loss=0.03926)
+final training elapsed: 3135.3s
+best val loss (scaled): 0.03926
+test loss (scaled MSE): 0.02926
+
+=== Test metrics (original OT units, degC) ===
+RMSE: 0.5919
+MAE:  0.3909
+MAPE: 4.89%
