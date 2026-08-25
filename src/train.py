@@ -6,7 +6,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from src.qlstm_model import QLSTMRegressor
-from src.utils import rmse, mae, mape
+from src.utils import rmse, mae, mape, resolve_device
 
 
 def make_loaders(train_ds, val_ds, test_ds, batch_size):
@@ -16,13 +16,15 @@ def make_loaders(train_ds, val_ds, test_ds, batch_size):
     return train_loader, val_loader, test_loader
 
 
-def run_epoch(model, loader, loss_fn, optimizer=None):
+def run_epoch(model, loader, loss_fn, optimizer=None, device=None):
     is_train = optimizer is not None
     model.train() if is_train else model.eval()
     total_loss, n_batches = 0.0, 0
     context = torch.enable_grad() if is_train else torch.no_grad()
     with context:
         for x, y in loader:
+            if device is not None:
+                x, y = x.to(device), y.to(device)
             if is_train:
                 optimizer.zero_grad()
             out = model(x)
@@ -36,14 +38,16 @@ def run_epoch(model, loader, loss_fn, optimizer=None):
 
 
 @torch.no_grad()
-def collect_predictions(model, loader):
+def collect_predictions(model, loader, device=None):
     model.eval()
     preds, actuals = [], []
     for x, y in loader:
+        if device is not None:
+            x, y = x.to(device), y.to(device)
         out = model(x)
         preds.append(out)
         actuals.append(y)
-    return torch.cat(preds).numpy(), torch.cat(actuals).numpy()
+    return torch.cat(preds).cpu().numpy(), torch.cat(actuals).cpu().numpy()
 
 
 def train_model(
@@ -58,13 +62,16 @@ def train_model(
     verbose=True,
     log_fn=print,
     checkpoint_path=None,
+    device=None,
+    model_cls=QLSTMRegressor,
 ):
     """If checkpoint_path is given, progress (model/optimizer/epoch/history/best
     state) is saved to it after every epoch, and training resumes from it on
     the next call if the file already exists (interrupted-run recovery)."""
+    device = resolve_device(model_cls, device)
     train_loader, val_loader, test_loader = make_loaders(train_ds, val_ds, test_ds, batch_size)
 
-    model = QLSTMRegressor(**model_cfg)
+    model = model_cls(**model_cfg).to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
@@ -75,7 +82,7 @@ def train_model(
     epochs_no_improve = 0
 
     if checkpoint_path and os.path.exists(checkpoint_path):
-        ckpt = torch.load(checkpoint_path, map_location="cpu")
+        ckpt = torch.load(checkpoint_path, map_location=device)
         model.load_state_dict(ckpt["model_state"])
         optimizer.load_state_dict(ckpt["optimizer_state"])
         start_epoch = ckpt["epoch"] + 1
@@ -86,10 +93,13 @@ def train_model(
         if verbose:
             log_fn(f"resumed from checkpoint at epoch {start_epoch} (best_val={best_val:.5f})")
 
+    if verbose:
+        log_fn(f"training on device: {device}")
+
     for epoch in range(start_epoch, num_epochs):
         t0 = time.time()
-        train_loss = run_epoch(model, train_loader, loss_fn, optimizer)
-        val_loss = run_epoch(model, val_loader, loss_fn, optimizer=None)
+        train_loss = run_epoch(model, train_loader, loss_fn, optimizer, device=device)
+        val_loss = run_epoch(model, val_loader, loss_fn, optimizer=None, device=device)
         history["train_loss"].append(train_loss)
         history["val_loss"].append(val_loss)
 
@@ -129,7 +139,7 @@ def train_model(
     result = {"model": model, "history": history, "best_val_loss": best_val}
 
     if test_ds is not None:
-        test_loss = run_epoch(model, test_loader, loss_fn, optimizer=None)
+        test_loss = run_epoch(model, test_loader, loss_fn, optimizer=None, device=device)
         result["test_loss"] = test_loss
 
     return result

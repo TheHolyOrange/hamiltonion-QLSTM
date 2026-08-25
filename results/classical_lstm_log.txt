@@ -1,0 +1,21 @@
+=== Using device: cuda ===
+=== Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
+features: ['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+train/val/test windows: 2426/501/501
+
+=== Training classical LSTM baseline (hidden_size=8, matched to QLSTM) ===
+resumed from checkpoint at epoch 28 (best_val=0.05039)
+training on device: cuda
+epoch 29/30  train_loss=0.02915  val_loss=0.06366  (0.5s)
+early stopping at epoch 29 (best val_loss=0.05039)
+training elapsed: 1.6s
+best val loss (scaled): 0.05039
+test loss (scaled MSE): 0.03322
+
+=== Classical LSTM test metrics (original OT units, degC) ===
+RMSE: 0.6316
+MAE:  0.4021
+MAPE: 5.15%
+params: 681
+
+Wrote comparison plot: results/plots/qlstm_vs_classical_vs_actual.png

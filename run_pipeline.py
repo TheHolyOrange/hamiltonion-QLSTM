@@ -16,8 +16,9 @@ import torch
 
 from src.preprocessing import build_datasets, inverse_transform_target
 from src.hyperparam_search import run_search
+from src.qlstm_model import QLSTMRegressor
 from src.train import train_model, collect_predictions, make_loaders
-from src.utils import set_seed, rmse, mae, mape
+from src.utils import set_seed, rmse, mae, mape, resolve_device
 
 N_ROWS = 3500
 SEQUENCE_LENGTH = 24
@@ -34,6 +35,10 @@ def main():
     def log(msg):
         print(msg)
         log_lines.append(msg)
+
+    device = resolve_device(QLSTMRegressor)
+    log(f"=== Using device: {device} (QLSTM pins its quantum layers to CPU; "
+        f"see QLSTMRegressor.PREFERRED_DEVICE) ===")
 
     log(f"=== Loading & preprocessing ETTh1 (n_rows={N_ROWS}, sequence_length={SEQUENCE_LENGTH}) ===")
     train_ds, val_ds, test_ds, meta = build_datasets(n_rows=N_ROWS, sequence_length=SEQUENCE_LENGTH)
@@ -77,6 +82,7 @@ def main():
         verbose=True,
         log_fn=log,
         checkpoint_path="results/checkpoints/final_training_state.pt",
+        device=device,
     )
     train_time = time.time() - t0
     log(f"final training elapsed: {train_time:.1f}s")
@@ -92,7 +98,7 @@ def main():
 
     # ---- Evaluate on test set in original units ----
     _, _, test_loader = make_loaders(train_ds, val_ds, test_ds, best_params["batch_size"])
-    preds_scaled, actuals_scaled = collect_predictions(model, test_loader)
+    preds_scaled, actuals_scaled = collect_predictions(model, test_loader, device=device)
     scaler = meta["scaler"]
     target_idx = meta["target_idx"]
     preds = inverse_transform_target(preds_scaled, scaler, target_idx, num_features)

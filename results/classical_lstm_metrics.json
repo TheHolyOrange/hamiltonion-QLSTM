@@ -1,0 +1,16 @@
+{
+  "test_rmse_original_units": 0.6316068287502526,
+  "test_mae_original_units": 0.40211157768763967,
+  "test_mape_percent": 5.146247720475543,
+  "test_mse_scaled": 0.03321824915474281,
+  "best_val_mse_scaled": 0.050391837605275214,
+  "train_time_seconds": 1.5979433059692383,
+  "model_cfg": {
+    "num_features": 11,
+    "hidden_size": 8
+  },
+  "lr": 0.01,
+  "batch_size": 32,
+  "epochs_trained": 29,
+  "n_params": 681
+}

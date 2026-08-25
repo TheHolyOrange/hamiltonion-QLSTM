@@ -1,0 +1,140 @@
+=== Using device: cuda ===
+=== order p=1 (window length=1, n_samples=3000) ===
+  training QLSTM...
+    device: cpu
+    epoch 1/20  train=0.5991  val=0.0133
+    epoch 2/20  train=0.0014  val=0.0000
+    epoch 3/20  train=0.0000  val=0.0000
+    epoch 4/20  train=0.0000  val=0.0000
+    epoch 5/20  train=0.0000  val=0.0000
+    epoch 6/20  train=0.0000  val=0.0000
+    epoch 7/20  train=0.0000  val=0.0000
+    epoch 8/20  train=0.0000  val=0.0000
+    early stop at epoch 8
+  QLSTM: test_mse=0.0000 test_acc=1.000 n_params=137
+  training classical LSTM baseline...
+    device: cuda
+    epoch 1/20  train=0.2753  val=0.0001
+    epoch 2/20  train=0.0003  val=0.0000
+    epoch 3/20  train=0.0000  val=0.0000
+    epoch 4/20  train=0.0000  val=0.0000
+    epoch 5/20  train=0.0000  val=0.0000
+    epoch 6/20  train=0.0000  val=0.0000
+    epoch 7/20  train=0.0000  val=0.0000
+    early stop at epoch 7
+  LSTM:  test_mse=0.0000 test_acc=1.000 n_params=361
+=== order p=2 (window length=2, n_samples=3000) ===
+  training QLSTM...
+    device: cpu
+    epoch 1/20  train=1.0036  val=1.0002
+    epoch 2/20  train=1.0020  val=0.9929
+    epoch 3/20  train=0.5395  val=0.0081
+    epoch 4/20  train=0.0008  val=0.0000
+    epoch 5/20  train=0.0000  val=0.0000
+    epoch 6/20  train=0.0000  val=0.0000
+    epoch 7/20  train=0.0000  val=0.0000
+    epoch 8/20  train=0.0000  val=0.0000
+    epoch 9/20  train=0.0000  val=0.0000
+    epoch 10/20  train=0.0000  val=0.0000
+    early stop at epoch 10
+  QLSTM: test_mse=0.0000 test_acc=1.000 n_params=137
+  training classical LSTM baseline...
+    device: cuda
+    epoch 1/20  train=0.7757  val=0.0257
+    epoch 2/20  train=0.0045  val=0.0000
+    epoch 3/20  train=0.0000  val=0.0000
+    epoch 4/20  train=0.0000  val=0.0000
+    epoch 5/20  train=0.0000  val=0.0000
+    epoch 6/20  train=0.0000  val=0.0000
+    epoch 7/20  train=0.0000  val=0.0000
+    epoch 8/20  train=0.0000  val=0.0000
+    early stop at epoch 8
+  LSTM:  test_mse=0.0000 test_acc=1.000 n_params=361
+=== order p=3 (window length=3, n_samples=3000) ===
+  training QLSTM...
+    device: cpu
+    epoch 1/20  train=1.0064  val=1.0029
+    epoch 2/20  train=1.0042  val=1.0020
+    epoch 3/20  train=1.0034  val=1.0127
+    epoch 4/20  train=1.0026  val=1.0015
+    epoch 5/20  train=1.0011  val=1.0061
+    epoch 6/20  train=1.0004  val=1.0025
+    epoch 7/20  train=1.0016  val=1.0012
+    epoch 8/20  train=1.0015  val=1.0039
+    epoch 9/20  train=1.0007  val=1.0017
+    epoch 10/20  train=1.0006  val=1.0017
+    epoch 11/20  train=1.0007  val=1.0031
+    epoch 12/20  train=0.9973  val=0.9814
+    epoch 13/20  train=0.4363  val=0.0186
+    epoch 14/20  train=0.0054  val=0.0013
+    epoch 15/20  train=0.0005  val=0.0002
+    epoch 16/20  train=0.0000  val=0.0000
+    epoch 17/20  train=0.0000  val=0.0000
+    epoch 18/20  train=0.0000  val=0.0000
+    epoch 19/20  train=0.0000  val=0.0000
+    epoch 20/20  train=0.0000  val=0.0000
+  QLSTM: test_mse=0.0000 test_acc=1.000 n_params=137
+  training classical LSTM baseline...
+    device: cuda
+    epoch 1/20  train=1.0055  val=0.9990
+    epoch 2/20  train=0.7455  val=0.0394
+    epoch 3/20  train=0.0056  val=0.0001
+    epoch 4/20  train=0.0000  val=0.0000
+    epoch 5/20  train=0.0000  val=0.0000
+    epoch 6/20  train=0.0000  val=0.0000
+    epoch 7/20  train=0.0000  val=0.0000
+    epoch 8/20  train=0.0000  val=0.0000
+    epoch 9/20  train=0.0000  val=0.0000
+    early stop at epoch 9
+  LSTM:  test_mse=0.0000 test_acc=1.000 n_params=361
+=== order p=4 (window length=4, n_samples=3000) ===
+  training QLSTM...
+    device: cpu
+    epoch 1/20  train=1.0057  val=0.9959
+    epoch 2/20  train=1.0008  val=0.9967
+    epoch 3/20  train=1.0058  val=0.9985
+    epoch 4/20  train=1.0047  val=1.0029
+    epoch 5/20  train=1.0005  val=1.0009
+    epoch 6/20  train=1.0017  val=1.0093
+    early stop at epoch 6
+  QLSTM: test_mse=1.0069 test_acc=0.467 n_params=137
+  training classical LSTM baseline...
+    device: cuda
+    epoch 1/20  train=1.0050  val=0.9982
+    epoch 2/20  train=1.0024  val=0.9944
+    epoch 3/20  train=1.0026  val=0.9971
+    epoch 4/20  train=1.0008  val=0.9982
+    epoch 5/20  train=1.0034  val=0.9996
+    epoch 6/20  train=1.0005  val=0.9968
+    epoch 7/20  train=1.0018  val=0.9950
+    early stop at epoch 7
+  LSTM:  test_mse=1.0108 test_acc=0.467 n_params=361
+=== order p=5 (window length=5, n_samples=3000) ===
+  training QLSTM...
+    device: cpu
+    epoch 1/20  train=1.0054  val=1.0104
+    epoch 2/20  train=1.0062  val=0.9994
+    epoch 3/20  train=1.0015  val=0.9981
+    epoch 4/20  train=1.0024  val=1.0012
+    epoch 5/20  train=1.0011  val=1.0007
+    epoch 6/20  train=1.0011  val=0.9981
+    epoch 7/20  train=1.0006  val=0.9983
+    epoch 8/20  train=1.0021  val=1.0054
+    early stop at epoch 8
+  QLSTM: test_mse=1.0000 test_acc=0.511 n_params=137
+  training classical LSTM baseline...
+    device: cuda
+    epoch 1/20  train=1.0047  val=0.9973
+    epoch 2/20  train=1.0020  val=0.9972
+    epoch 3/20  train=1.0013  val=0.9972
+    epoch 4/20  train=1.0027  val=1.0019
+    epoch 5/20  train=1.0002  val=0.9966
+    epoch 6/20  train=1.0006  val=0.9970
+    epoch 7/20  train=1.0030  val=0.9985
+    epoch 8/20  train=1.0000  val=0.9968
+    epoch 9/20  train=1.0009  val=1.0050
+    epoch 10/20  train=1.0009  val=0.9967
+    early stop at epoch 10
+  LSTM:  test_mse=1.0009 test_acc=0.507 n_params=361
+
+total elapsed: 521.9s

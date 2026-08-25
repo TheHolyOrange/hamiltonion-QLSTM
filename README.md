@@ -12,6 +12,43 @@ Quantum-Enhanced Long Short-Term Memory*, Entropy 2024), generalized here to
 arbitrary feature counts, batched quantum circuit execution, and a
 train/val/test pipeline with proper scaling and early stopping.
 
+## Defining "higher-order temporal dependencies"
+
+The phrase is used throughout this project's problem statement, so it is
+defined precisely here rather than left as a slogan:
+
+- **Statistical definition.** A target y has an *order-p* temporal
+  dependency on lagged inputs x_{t-1},...,x_{t-p} if y is independent of
+  every strict subset of those lags (no order-<p combination carries any
+  information about y), and only the full joint interaction of all p lags
+  does. This is the k-wise-independence property of, e.g., the parity
+  function, and is the sense in which "higher order" is *not* the same as
+  "long lookback window" — a linear function of many lags is still order-1
+  in this sense, since each lag contributes independently.
+- **Dynamical/Hamiltonian definition** (the one motivating this project's
+  architecture). If inputs are encoded into a time-evolution generator,
+  U(x,t) = 𝒯 exp(-i∫H(x(t))dt), its Dyson/Magnus expansion produces terms
+  such as ∫∫𝒯[H(t₁)H(t₂)]dt₁dt₂, etc.; the n-th order term nonlinearly
+  couples n distinct time points via the non-commutativity of H at
+  different times. A fixed-ansatz VQC gate recurrence (the current 30%
+  checkpoint) is Markovian by construction and does not have algebraic
+  access to these terms — this is exactly the gap the planned
+  dynamical-Hamiltonian encoding is meant to close.
+
+`src/synthetic_order_experiment.py` tests the statistical definition
+directly and controllably: it trains the QLSTM and a classical-LSTM
+baseline on order-p parity tasks (p = 1..5, where p-th order parity is
+solvable only from the joint interaction of all p lags) and reports
+sign-accuracy vs. p (chance = 50%) as `results/synthetic_order_results.json`
+and `results/plots/order_dependency_curve.png`. This is a capability probe
+against a synthetic, ground-truth-order task, not a claim about ETTh1 — the
+ETTh1 multi-scale-periodicity argument in the report motivates dataset
+choice but is not itself evidence of order-p capture.
+
+```bash
+python3 -m src.synthetic_order_experiment   # writes results/synthetic_order_results.json + plot
+```
+
 ## Structure
 
 ```

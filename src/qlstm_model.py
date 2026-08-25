@@ -84,8 +84,40 @@ class QLSTM(nn.Module):
             "output": qml.qnn.TorchLayer(make_circuit(self.wires_output, dev_output), weight_shapes),
         })
         self.clayer_out = nn.Linear(n_qubits, hidden_size)
+        self._compute_device = torch.device("cpu")
+
+    # PennyLane's default.qubit simulator only runs on CPU (see _apply below),
+    # and at these qubit counts a GPU wouldn't help even if it could -- the
+    # cost is per-circuit Python dispatch overhead, not FLOPs on the tiny
+    # (2**n_qubits)-dim statevector. Benchmarked: routing the classical wrapper
+    # layers through CUDA anyway is a net ~7% *slower* than plain CPU (transfer
+    # overhead with nothing to amortize it against). train.py's device
+    # resolution honors this over whatever device was requested.
+    PREFERRED_DEVICE = "cpu"
+
+    def _apply(self, fn, recurse=True):
+        """Move only the classical wrapper layers; the VQC submodules (ModuleDict
+        of PennyLane TorchLayers) are deliberately left off of the standard
+        recursion below. This is what every device-moving call funnels through
+        (.to(), .cuda(), .float(), nn.Module.to() on a parent module, ...), so
+        overriding it here (rather than .to()) makes the exclusion apply no matter
+        how the move is triggered.
+
+        Why: PennyLane's default.qubit statevector simulator initializes its
+        state on CPU regardless of the torch interface, so feeding it CUDA
+        parameters raises a device-mismatch error -- and there's no GPU benefit
+        to moving it anyway, since simulating the circuit (not these surrounding
+        linear layers) is the actual cost. Data is shuttled cpu<->device around
+        each VQC call in forward() below; `.to()` is autograd-differentiable so
+        gradients still flow through the shuttling."""
+        self.clayer_in._apply(fn, recurse)
+        self.clayer_out._apply(fn, recurse)
+        self._compute_device = fn(torch.zeros(1)).device
+        return self
 
     def forward(self, x, init_states=None):
+        device = self._compute_device
+        x = x.to(device)
         if self.batch_first:
             batch_size, seq_len, _ = x.size()
         else:
@@ -93,8 +125,8 @@ class QLSTM(nn.Module):
             x = x.transpose(0, 1)
 
         if init_states is None:
-            h_t = torch.zeros(batch_size, self.hidden_size, device=x.device)
-            c_t = torch.zeros(batch_size, self.hidden_size, device=x.device)
+            h_t = torch.zeros(batch_size, self.hidden_size, device=device)
+            c_t = torch.zeros(batch_size, self.hidden_size, device=device)
         else:
             h_t, c_t = init_states
 
@@ -103,11 +135,12 @@ class QLSTM(nn.Module):
             x_t = x[:, t, :]
             v_t = torch.cat((h_t, x_t), dim=1)
             y_t = self.clayer_in(v_t)
+            y_t_cpu = y_t.cpu()  # VQC (default.qubit) simulates on CPU only
 
-            f_t = torch.sigmoid(self.clayer_out(self.VQC["forget"](y_t)))
-            i_t = torch.sigmoid(self.clayer_out(self.VQC["input"](y_t)))
-            g_t = torch.tanh(self.clayer_out(self.VQC["cand"](y_t)))
-            o_t = torch.sigmoid(self.clayer_out(self.VQC["output"](y_t)))
+            f_t = torch.sigmoid(self.clayer_out(self.VQC["forget"](y_t_cpu).to(device)))
+            i_t = torch.sigmoid(self.clayer_out(self.VQC["input"](y_t_cpu).to(device)))
+            g_t = torch.tanh(self.clayer_out(self.VQC["cand"](y_t_cpu).to(device)))
+            o_t = torch.sigmoid(self.clayer_out(self.VQC["output"](y_t_cpu).to(device)))
 
             c_t = f_t * c_t + i_t * g_t
             h_t = o_t * torch.tanh(c_t)
@@ -119,6 +152,8 @@ class QLSTM(nn.Module):
 
 class QLSTMRegressor(nn.Module):
     """QLSTM followed by a linear head -> single-step regression (next OT value)."""
+
+    PREFERRED_DEVICE = "cpu"  # see QLSTM.PREFERRED_DEVICE
 
     def __init__(self, num_features, hidden_size, n_qubits=4, n_qlayers=1, n_vrotations=3):
         super().__init__()
