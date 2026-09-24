@@ -5,3 +5,5 @@ __pycache__/
 .ipynb_checkpoints/
 results/pipeline_stdout.log
 results/optuna_study.db
+results/hqlstm_run.log
+results/hqlstm_autostop.log
