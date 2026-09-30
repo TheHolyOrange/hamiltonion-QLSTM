@@ -47,18 +47,33 @@ sweep, not from intuition.
 
 ## What was in progress when this note was written
 
-A retrain of H-QLSTM with the fix was launched in the background:
-```
+A retrain of H-QLSTM with the fix was launched in the background and then
+**intentionally stopped by the user** (SIGTERM, clean exit) at the end of
+epoch 3/30, before logging off for the day — not a crash. Last completed
+epoch: `epoch 3/30  train_loss=0.03878  val_loss=0.04469`, already well
+below the old (buggy-init) run's best-ever val loss of 0.082, with
+train/val tracking together instead of diverging — the loss curve is
+stable so far, which is the whole point of the fix. `results/checkpoints/
+hqlstm_training_state.pt` reflects this epoch-3 state and is committed at
+git commit `<check `git log -- results/checkpoints/hqlstm_training_state.pt`
+for the exact hash>`.
+
+**First thing to do: just resume it.** Re-launch the exact same command;
+`src/train.py::train_model`'s checkpoint/resume logic will pick up from
+epoch 4 automatically using `results/checkpoints/hqlstm_training_state.pt`
+(it checks `os.path.exists(checkpoint_path)` and resumes if found — no
+flags needed):
+```bash
 cd /home/student/Desktop/hqlstm && python3 run_hqlstm.py > /tmp/hqlstm_retrain2.log 2>&1
 ```
-As of this note, it had reached epoch 2/30 (`train_loss=0.04684
-val_loss=0.05468`), already beating the old run's best-ever val loss (0.082)
-while train/val tracked together instead of diverging — a good early sign,
-but training was **not yet complete** (up to 30 epochs, patience=8 early
-stopping, ~400s/epoch => up to ~3 hours worst case).
+Use the Bash tool's `run_in_background: true` directly on this command
+(NOT wrapped in `nohup ... &`, which was a mistake made once already in
+this task — it makes the tool track the trivial wrapper instead of the
+actual long-running process). Expect ~400s/epoch, up to 30 epochs total
+with patience=8 early stopping, so up to ~2 hours more from epoch 4.
 
-**First thing to do:** check whether that process is still running and how
-far it got:
+If for some reason the checkpoint is missing/stale, check whether a
+process is still running before assuming it needs restarting:
 ```bash
 ps aux | grep run_hqlstm.py | grep -v grep
 tail -50 /tmp/hqlstm_retrain2.log   # may be gone if /tmp was cleared on reboot
