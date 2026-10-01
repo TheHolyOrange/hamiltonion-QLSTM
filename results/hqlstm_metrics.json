@@ -1,10 +1,10 @@
 {
-  "test_rmse_original_units": 0.7109319848343284,
-  "test_mae_original_units": 0.5116068350772813,
-  "test_mape_percent": 6.272689792772203,
-  "test_mse_scaled": 0.04254141973797232,
-  "best_val_mse_scaled": 0.08222289255354553,
-  "train_time_seconds": 438.9899444580078,
+  "test_rmse_original_units": 0.6226528409600882,
+  "test_mae_original_units": 0.42032036132201406,
+  "test_mape_percent": 5.265567858493662,
+  "test_mse_scaled": 0.03267266746843234,
+  "best_val_mse_scaled": 0.0427435027086176,
+  "train_time_seconds": 5564.925441026688,
   "model_cfg": {
     "num_features": 11,
     "hidden_size": 8,
@@ -13,6 +13,6 @@
   },
   "lr": 0.01,
   "batch_size": 32,
-  "epochs_trained": 10,
+  "epochs_trained": 17,
   "n_params": 289
 }
