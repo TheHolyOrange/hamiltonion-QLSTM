@@ -54,6 +54,7 @@ class HQLSTM(nn.Module):
         hidden_size,
         n_qubits=4,
         n_qlayers=1,
+        n_trotter_steps=2,
         batch_first=True,
         backend="default.qubit",
     ):
@@ -63,6 +64,7 @@ class HQLSTM(nn.Module):
         self.concat_size = input_size + hidden_size
         self.n_qubits = n_qubits
         self.n_qlayers = n_qlayers
+        self.n_trotter_steps = n_trotter_steps
         self.batch_first = batch_first
 
         self.wires_forget = list(range(n_qubits))
@@ -77,15 +79,25 @@ class HQLSTM(nn.Module):
 
         n_q = self.n_qubits
 
-        def build_hamiltonian(x, alpha_l, beta_l):
-            """x: (batch, n_qubits) classical features -> data-dependent
-            generator coefficients. alpha_l, beta_l: (n_qubits,) trainable
-            weights for this layer. Returns a qml.Hamiltonian with batched
+        def build_hamiltonian(x, alpha_l, beta_l, gamma_l):
+            """x: (batch, n_qubits) classical features (already tanh-bounded
+            in forward(), see note there) -> data-dependent generator
+            coefficients. alpha_l, beta_l, gamma_l: (n_qubits,) trainable
+            weights for this layer. gamma_l is a trainable local Z-field
+            bias added alongside the data term -- without it, the only
+            trainable weights touching the Z-basis come indirectly through
+            beta's ZZ coupling, which under-parameterizes this circuit
+            relative to QLSTM's per-qubit RZ rotation (src/qlstm_model.py):
+            QLSTM has 3 trainable angles/qubit/layer (RX, RY, RZ) vs. this
+            circuit's 2 (alpha, beta) without gamma. Adding gamma brings the
+            trainable-weight count to parity (3/qubit/layer: alpha, beta,
+            gamma) so the two circuits are capacity-matched, not just
+            qubit/layer-count-matched. Returns a qml.Hamiltonian with batched
             (per-sample) coefficients."""
             batch = x.shape[0]
             coeffs, ops = [], []
             for i in range(n_q):
-                coeffs.append(x[:, i])
+                coeffs.append(x[:, i] + gamma_l[i].expand(batch))
                 ops.append(qml.PauliZ(i))
             for i in range(n_q):
                 coeffs.append(alpha_l[i].expand(batch))
@@ -97,16 +109,23 @@ class HQLSTM(nn.Module):
             return qml.Hamiltonian(torch.stack(coeffs), ops)
 
         def make_circuit(wires_type, dev):
-            def _circuit(inputs, alpha, beta, time):
+            def _circuit(inputs, alpha, beta, gamma, time):
                 for l in range(self.n_qlayers):
-                    H_l = build_hamiltonian(inputs, alpha[l], beta[l])
-                    qml.ApproxTimeEvolution(H_l, time[l], 1)
+                    H_l = build_hamiltonian(inputs, alpha[l], beta[l], gamma[l])
+                    # n_trotter_steps > 1 Trotter-steps the same total
+                    # evolution time into finer sub-steps, which lowers the
+                    # first-order Trotter error (O(time^2 / n) per layer)
+                    # without changing trainable-parameter count -- a purely
+                    # numerical-fidelity knob, tuned separately from model
+                    # capacity.
+                    qml.ApproxTimeEvolution(H_l, time[l], self.n_trotter_steps)
                 return [qml.expval(qml.PauliZ(w)) for w in wires_type]
             return qml.QNode(_circuit, dev, interface="torch")
 
         weight_shapes = {
             "alpha": (n_qlayers, n_qubits),
             "beta": (n_qlayers, n_qubits),
+            "gamma": (n_qlayers, n_qubits),
             "time": (n_qlayers,),
         }
 
@@ -145,6 +164,7 @@ class HQLSTM(nn.Module):
         init_method = {
             "alpha": lambda t: nn.init.uniform_(t, -1.0, 1.0),
             "beta": lambda t: nn.init.uniform_(t, -1.0, 1.0),
+            "gamma": lambda t: nn.init.uniform_(t, -1.0, 1.0),
             "time": lambda t: nn.init.uniform_(t, 0.3, 0.6),
         }
 
@@ -193,7 +213,18 @@ class HQLSTM(nn.Module):
         for t in range(seq_len):
             x_t = x[:, t, :]
             v_t = torch.cat((h_t, x_t), dim=1)
-            y_t = self.clayer_in(v_t)
+            # tanh-bound the Z-field data coefficient to the same O(1) scale
+            # as alpha/beta/gamma (see the init_method note above): clayer_in
+            # is an unconstrained Linear, and an empirical trace of a fully
+            # trained (pre-fix) checkpoint showed this coefficient drifting
+            # from ~1.65 up to a ~2.0 plateau over the recurrence as training
+            # progressed -- not yet the catastrophic aliasing the original
+            # alpha/beta/time init hit, but it erodes the n=1 Trotter
+            # approximation's validity the same way and tracked with a late
+            # training val-loss spike (0.04 -> 0.25) right before early
+            # stopping. Bounding it keeps time * ||H|| well-conditioned for
+            # the whole run, not just at init.
+            y_t = torch.tanh(self.clayer_in(v_t))
             y_t_cpu = y_t.cpu()  # VQC (default.qubit) simulates on CPU only
 
             f_t = torch.sigmoid(self.clayer_out(self.VQC["forget"](y_t_cpu).to(device)))
@@ -214,13 +245,14 @@ class HQLSTMRegressor(nn.Module):
 
     PREFERRED_DEVICE = "cpu"  # see HQLSTM.PREFERRED_DEVICE
 
-    def __init__(self, num_features, hidden_size, n_qubits=4, n_qlayers=1):
+    def __init__(self, num_features, hidden_size, n_qubits=4, n_qlayers=1, n_trotter_steps=2):
         super().__init__()
         self.hqlstm = HQLSTM(
             input_size=num_features,
             hidden_size=hidden_size,
             n_qubits=n_qubits,
             n_qlayers=n_qlayers,
+            n_trotter_steps=n_trotter_steps,
             batch_first=True,
         )
         self.linear = nn.Linear(hidden_size, 1)

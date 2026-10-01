@@ -1,0 +1,38 @@
+=== Using device: cpu ===
+=== Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
+train/val/test windows: 2426/501/501
+
+=== H-QLSTM dedicated search: lr x n_trotter_steps, 3 epochs/trial, hidden_size=8, n_qubits=6, n_qlayers=2 (matched to QLSTM) ===
+
+--- trial lr=0.005,trotter=1 ---
+[lr=0.005,trotter=1] training on device: cpu
+[lr=0.005,trotter=1] epoch 1/3  train_loss=0.72628  val_loss=0.43458  (406.2s)
+[lr=0.005,trotter=1] epoch 2/3  train_loss=0.11537  val_loss=0.11173  (404.6s)
+[lr=0.005,trotter=1] epoch 3/3  train_loss=0.04378  val_loss=0.06542  (407.6s)
+--- trial lr=0.005,trotter=1 done: best_val_loss=0.06542 (1218.9s) ---
+
+--- trial lr=0.005,trotter=2 ---
+[lr=0.005,trotter=2] training on device: cpu
+[lr=0.005,trotter=2] epoch 1/3  train_loss=0.73209  val_loss=0.41745  (719.1s)
+[lr=0.005,trotter=2] epoch 2/3  train_loss=0.11080  val_loss=0.09781  (717.0s)
+[lr=0.005,trotter=2] epoch 3/3  train_loss=0.04384  val_loss=0.06399  (717.0s)
+--- trial lr=0.005,trotter=2 done: best_val_loss=0.06399 (2153.0s) ---
+
+--- trial lr=0.01,trotter=1 ---
+[lr=0.01,trotter=1] training on device: cpu
+[lr=0.01,trotter=1] epoch 1/3  train_loss=0.51594  val_loss=0.26378  (409.1s)
+[lr=0.01,trotter=1] epoch 2/3  train_loss=0.06922  val_loss=0.07359  (408.8s)
+[lr=0.01,trotter=1] epoch 3/3  train_loss=0.03998  val_loss=0.06040  (408.8s)
+--- trial lr=0.01,trotter=1 done: best_val_loss=0.06040 (1226.6s) ---
+
+--- trial lr=0.01,trotter=2 ---
+[lr=0.01,trotter=2] training on device: cpu
+[lr=0.01,trotter=2] epoch 1/3  train_loss=0.50284  val_loss=0.19008  (718.0s)
+[lr=0.01,trotter=2] epoch 2/3  train_loss=0.05839  val_loss=0.06853  (716.4s)
+[lr=0.01,trotter=2] epoch 3/3  train_loss=0.04059  val_loss=0.05812  (716.3s)
+--- trial lr=0.01,trotter=2 done: best_val_loss=0.05812 (2150.7s) ---
+
+=== Search complete (6749.4s). Best: lr=0.01, n_trotter_steps=2 (val_loss=0.05812) ===
+
+=== Full retrain: lr=0.01, n_trotter_steps=2, hidden_size=8, n_qubits=6, n_qlayers=2 ===
+training on device: cpu
