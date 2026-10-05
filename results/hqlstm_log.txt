@@ -1,34 +1,31 @@
-=== Using device: cpu (H-QLSTM pins its quantum layers to CPU, same as QLSTM; see HQLSTMRegressor.PREFERRED_DEVICE) ===
+=== Using device: cpu ===
 === Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
-features: ['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
 train/val/test windows: 2426/501/501
 
-=== Training H-QLSTM (hidden_size=8, n_qubits=6, n_qlayers=2, matched to QLSTM) ===
-resumed from checkpoint at epoch 3 (best_val=0.04469)
-training on device: cpu
-epoch 4/30  train_loss=0.03695  val_loss=0.04346  (395.8s)
-epoch 5/30  train_loss=0.03720  val_loss=0.04876  (395.0s)
-epoch 6/30  train_loss=0.03723  val_loss=0.04301  (385.6s)
-epoch 7/30  train_loss=0.03725  val_loss=0.04558  (387.2s)
-epoch 8/30  train_loss=0.03567  val_loss=0.05027  (393.6s)
-epoch 9/30  train_loss=0.03577  val_loss=0.04274  (395.0s)
-epoch 10/30  train_loss=0.03679  val_loss=0.04781  (393.8s)
-epoch 11/30  train_loss=0.03481  val_loss=0.04682  (393.8s)
-epoch 12/30  train_loss=0.03336  val_loss=0.05347  (394.2s)
-epoch 13/30  train_loss=0.03608  val_loss=0.04804  (393.9s)
-epoch 14/30  train_loss=0.03611  val_loss=0.04714  (393.6s)
-epoch 15/30  train_loss=0.03416  val_loss=0.05133  (394.3s)
-epoch 16/30  train_loss=0.03554  val_loss=0.04474  (392.5s)
-epoch 17/30  train_loss=0.03441  val_loss=0.24633  (393.9s)
-early stopping at epoch 17 (best val_loss=0.04274)
-training elapsed: 5564.9s
-best val loss (scaled): 0.04274
-test loss (scaled MSE): 0.03267
+=== (Stage 1 search reused from results/hqlstm_tune_search.json: best lr=0.01, n_trotter_steps=2, val_loss=0.05812) ===
 
-=== H-QLSTM test metrics (original OT units, degC) ===
-RMSE: 0.6227
-MAE:  0.4203
-MAPE: 5.27%
-params: 289
+=== Full retrain: lr=0.01, n_trotter_steps=2, hidden_size=8, n_qubits=6, n_qlayers=2 ===
+resumed from checkpoint at epoch 16 (best_val=0.03986)
+training on device: cpu
+epoch 17/30  train_loss=0.03411  val_loss=0.05741  (1754.4s)
+epoch 18/30  train_loss=0.03643  val_loss=0.03980  (1245.1s)
+epoch 19/30  train_loss=0.03525  val_loss=0.04582  (450.2s)
+epoch 20/30  train_loss=0.03407  val_loss=0.05538  (464.9s)
+epoch 21/30  train_loss=0.03574  val_loss=0.05299  (478.3s)
+epoch 22/30  train_loss=0.03353  val_loss=0.04620  (477.5s)
+epoch 23/30  train_loss=0.03336  val_loss=0.04974  (472.3s)
+epoch 24/30  train_loss=0.03346  val_loss=0.04554  (476.7s)
+epoch 25/30  train_loss=0.03349  val_loss=0.04632  (488.2s)
+epoch 26/30  train_loss=0.03376  val_loss=0.04729  (471.3s)
+early stopping at epoch 26 (best val_loss=0.03980)
+training elapsed: 6830.5s
+best val loss (scaled): 0.03980
+test loss (scaled MSE): 0.02796
+
+=== H-QLSTM (tuned) test metrics (original OT units, degC) ===
+RMSE: 0.5785
+MAE:  0.3694
+MAPE: 4.67%
+params: 337
 
 Wrote 3-way comparison plot: results/plots/lstm_vs_qlstm_vs_hqlstm_vs_actual.png
