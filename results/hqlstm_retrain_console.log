@@ -1,0 +1,23 @@
+=== Using device: cpu ===
+=== Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
+train/val/test windows: 2426/501/501
+
+=== (Stage 1 search reused from results/hqlstm_tune_search.json: best lr=0.01, n_trotter_steps=2, val_loss=0.05812) ===
+
+=== Full retrain: lr=0.01, n_trotter_steps=2, hidden_size=8, n_qubits=6, n_qlayers=2 ===
+training on device: cpu
+epoch 1/30  train_loss=0.50284  val_loss=0.19008  (431.5s)
+epoch 2/30  train_loss=0.05839  val_loss=0.06853  (415.6s)
+epoch 3/30  train_loss=0.04059  val_loss=0.05812  (414.4s)
+epoch 4/30  train_loss=0.03844  val_loss=0.07006  (414.5s)
+epoch 5/30  train_loss=0.04044  val_loss=0.05411  (416.5s)
+epoch 6/30  train_loss=0.03780  val_loss=0.06603  (414.8s)
+epoch 7/30  train_loss=0.03778  val_loss=0.05414  (413.3s)
+epoch 8/30  train_loss=0.03704  val_loss=0.05074  (414.9s)
+epoch 9/30  train_loss=0.03643  val_loss=0.04898  (414.5s)
+epoch 10/30  train_loss=0.03772  val_loss=0.04929  (775.6s)
+epoch 11/30  train_loss=0.03742  val_loss=0.05992  (435.5s)
+epoch 12/30  train_loss=0.03734  val_loss=0.05225  (414.9s)
+epoch 13/30  train_loss=0.03552  val_loss=0.03986  (418.2s)
+epoch 14/30  train_loss=0.03426  val_loss=0.04925  (427.9s)
+epoch 15/30  train_loss=0.03522  val_loss=0.04539  (429.2s)

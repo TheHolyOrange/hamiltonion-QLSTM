@@ -1,0 +1,35 @@
+=== Using device: cpu ===
+=== Loading & preprocessing ETTh1 (n_rows=3500, sequence_length=24) ===
+train/val/test windows: 2426/501/501
+
+=== H-QLSTM dedicated search: lr x n_trotter_steps, 3 epochs/trial, hidden_size=8, n_qubits=6, n_qlayers=2 (matched to QLSTM) ===
+
+--- trial lr=0.005,trotter=1 ---
+[lr=0.005,trotter=1] training on device: cpu
+[lr=0.005,trotter=1] epoch 1/3  train_loss=0.72628  val_loss=0.43458  (254.3s)
+[lr=0.005,trotter=1] epoch 2/3  train_loss=0.11537  val_loss=0.11173  (252.7s)
+[lr=0.005,trotter=1] epoch 3/3  train_loss=0.04378  val_loss=0.06542  (251.4s)
+--- trial lr=0.005,trotter=1 done: best_val_loss=0.06542 (759.5s) ---
+
+--- trial lr=0.005,trotter=2 ---
+[lr=0.005,trotter=2] training on device: cpu
+[lr=0.005,trotter=2] epoch 1/3  train_loss=0.73209  val_loss=0.41745  (1311.7s)
+[lr=0.005,trotter=2] epoch 2/3  train_loss=0.11080  val_loss=0.09781  (876.5s)
+[lr=0.005,trotter=2] epoch 3/3  train_loss=0.04384  val_loss=0.06399  (675.6s)
+--- trial lr=0.005,trotter=2 done: best_val_loss=0.06399 (2863.9s) ---
+
+--- trial lr=0.01,trotter=1 ---
+[lr=0.01,trotter=1] training on device: cpu
+[lr=0.01,trotter=1] epoch 1/3  train_loss=0.51594  val_loss=0.26379  (244.9s)
+[lr=0.01,trotter=1] epoch 2/3  train_loss=0.06922  val_loss=0.07359  (246.7s)
+[lr=0.01,trotter=1] epoch 3/3  train_loss=0.03998  val_loss=0.06040  (248.6s)
+--- trial lr=0.01,trotter=1 done: best_val_loss=0.06040 (740.2s) ---
+
+--- trial lr=0.01,trotter=2 ---
+[lr=0.01,trotter=2] training on device: cpu
+[lr=0.01,trotter=2] epoch 1/3  train_loss=0.50284  val_loss=0.19008  (429.0s)
+[lr=0.01,trotter=2] epoch 2/3  train_loss=0.05839  val_loss=0.06853  (427.1s)
+[lr=0.01,trotter=2] epoch 3/3  train_loss=0.04059  val_loss=0.05812  (426.9s)
+--- trial lr=0.01,trotter=2 done: best_val_loss=0.05812 (1283.0s) ---
+
+=== Search complete (5646.6s). Best: lr=0.01, n_trotter_steps=2 (val_loss=0.05812) ===
