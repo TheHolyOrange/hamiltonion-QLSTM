@@ -1,0 +1,10 @@
+=== hqlstm seed 1 on cpu ===
+training on device: cpu
+epoch 1/30  train_loss=0.45045  val_loss=0.22217  (479.2s)
+epoch 2/30  train_loss=0.05116  val_loss=0.08260  (491.2s)
+epoch 3/30  train_loss=0.03996  val_loss=0.05606  (494.5s)
+epoch 4/30  train_loss=0.04029  val_loss=0.06352  (507.0s)
+epoch 5/30  train_loss=0.03844  val_loss=0.06228  (515.0s)
+epoch 6/30  train_loss=0.03754  val_loss=0.05400  (511.1s)
+epoch 7/30  train_loss=0.03620  val_loss=0.05674  (509.7s)
+epoch 8/30  train_loss=0.03699  val_loss=0.05819  (509.8s)
