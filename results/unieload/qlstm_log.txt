@@ -1,0 +1,17 @@
+=== UniEload / QLSTM on cpu ===
+features: ['Load_kW', 'Temperature_C', 'Humidity_%', 'Precipitation_mm', 'Wind_Speed_mps', 'Solar_Radiation_Wm2', 'vacation', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+rows ('2025-05-08 04:00:00', '2025-09-30 23:00:00'), splits {'train': ('2025-05-08 04:00:00', '2025-08-18 05:00:00'), 'val': ('2025-08-18 06:00:00', '2025-09-09 02:00:00'), 'test': ('2025-09-09 03:00:00', '2025-09-30 23:00:00')}
+train/val/test windows: 2426/501/501
+model_cfg={'num_features': 11, 'hidden_size': 8, 'n_qubits': 6, 'n_qlayers': 2} lr=0.01 batch_size=32 epochs<=30 patience=8
+resumed from checkpoint at epoch 3 (best_val=0.25953)
+training on device: cpu
+epoch 4/30  train_loss=0.27359  val_loss=0.26821  (927.3s)
+epoch 5/30  train_loss=0.26119  val_loss=0.32262  (2135.5s)
+epoch 6/30  train_loss=0.24335  val_loss=0.29767  (1371.1s)
+epoch 7/30  train_loss=0.23225  val_loss=0.27382  (748.4s)
+epoch 8/30  train_loss=0.23394  val_loss=0.29253  (598.0s)
+epoch 9/30  train_loss=0.22549  val_loss=0.27535  (3192.4s)
+early stopping at epoch 9 (best val_loss=0.25953)
+
+=== QLSTM test metrics (kW) ===
+RMSE: 31.087  MAE: 24.883  MAPE: 9.79%  params: 329  epochs: 9  time: 9039.0s

@@ -1,0 +1,40 @@
+=== UniEload / QLSTM v2 (scheduler + grad clip) on cpu ===
+model_cfg={'num_features': 11, 'hidden_size': 8, 'n_qubits': 6, 'n_qlayers': 2} lr0=0.01 batch_size=32 epochs<=30 patience=12 grad_clip=1.0 scheduler=ReduceLROnPlateau(factor=0.5,patience=2)
+train/val/test windows: 2426/501/501
+resumed from checkpoint at epoch 5 (best_val=0.25999)
+training on device: cpu
+epoch 6/30  train_loss=0.23932  val_loss=0.26856  lr=0.00500  (556.2s)
+epoch 7/30  train_loss=0.23956  val_loss=0.29414  lr=0.00500  (3405.9s)
+  lr reduced: 0.00500 -> 0.00250
+epoch 8/30  train_loss=0.22989  val_loss=0.26559  lr=0.00250  (782.8s)
+epoch 9/30  train_loss=0.22419  val_loss=0.27004  lr=0.00250  (569.3s)
+epoch 10/30  train_loss=0.22715  val_loss=0.26855  lr=0.00250  (527.1s)
+  lr reduced: 0.00250 -> 0.00125
+epoch 11/30  train_loss=0.22086  val_loss=0.25860  lr=0.00125  (527.6s)
+epoch 12/30  train_loss=0.22064  val_loss=0.25820  lr=0.00125  (634.5s)
+epoch 13/30  train_loss=0.21795  val_loss=0.25816  lr=0.00125  (1589.4s)
+epoch 14/30  train_loss=0.21698  val_loss=0.25645  lr=0.00125  (2325.3s)
+epoch 15/30  train_loss=0.21701  val_loss=0.26798  lr=0.00125  (690.8s)
+epoch 16/30  train_loss=0.21786  val_loss=0.26211  lr=0.00125  (415.5s)
+epoch 17/30  train_loss=0.21542  val_loss=0.26170  lr=0.00125  (1008.3s)
+  lr reduced: 0.00125 -> 0.00063
+epoch 18/30  train_loss=0.21393  val_loss=0.25476  lr=0.00063  (552.1s)
+epoch 19/30  train_loss=0.21493  val_loss=0.25331  lr=0.00063  (532.0s)
+epoch 20/30  train_loss=0.21406  val_loss=0.25459  lr=0.00063  (386.3s)
+epoch 21/30  train_loss=0.21195  val_loss=0.25408  lr=0.00063  (387.5s)
+epoch 22/30  train_loss=0.21298  val_loss=0.25450  lr=0.00063  (332.9s)
+  lr reduced: 0.00063 -> 0.00031
+epoch 23/30  train_loss=0.21280  val_loss=0.25455  lr=0.00031  (327.3s)
+epoch 24/30  train_loss=0.21306  val_loss=0.25204  lr=0.00031  (355.3s)
+epoch 25/30  train_loss=0.21186  val_loss=0.25409  lr=0.00031  (714.5s)
+epoch 26/30  train_loss=0.21090  val_loss=0.25404  lr=0.00031  (968.5s)
+epoch 27/30  train_loss=0.21161  val_loss=0.25216  lr=0.00031  (477.2s)
+  lr reduced: 0.00031 -> 0.00016
+epoch 28/30  train_loss=0.21173  val_loss=0.25244  lr=0.00016  (327.1s)
+epoch 29/30  train_loss=0.21126  val_loss=0.25193  lr=0.00016  (1674.6s)
+epoch 30/30  train_loss=0.20971  val_loss=0.25224  lr=0.00016  (371.3s)
+
+=== QLSTM v2 test metrics (kW) ===
+RMSE: 30.498  MAE: 24.002  MAPE: 9.55%  params: 329  epochs: 30  time: 20475.3s
+
+=== QLSTM v2 complete ===

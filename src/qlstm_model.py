@@ -34,6 +34,8 @@ class QLSTM(nn.Module):
         n_vrotations=3,
         batch_first=True,
         backend="default.qubit",
+        noise_p=0.0,
+        shots=None,
     ):
         super().__init__()
         self.n_inputs = input_size
@@ -43,6 +45,23 @@ class QLSTM(nn.Module):
         self.n_qlayers = n_qlayers
         self.n_vrotations = n_vrotations
         self.batch_first = batch_first
+        # Evaluation-only hardware-realism knobs (src/quantum_analysis.py);
+        # the defaults reproduce the noiseless, analytic-expectation model
+        # every checkpoint was trained with, so trained weights load into a
+        # noisy/shot-based copy unchanged.
+        #   noise_p > 0: a single-qubit depolarizing channel of strength
+        #     noise_p after every gate, on each wire the gate touched
+        #     (density-matrix simulation on default.mixed).
+        #   shots: estimate each <Z> from a finite number of measurement
+        #     samples instead of the exact expectation value.
+        self.noise_p = noise_p
+        if noise_p > 0:
+            backend = "default.mixed"
+
+        def noise(*wires):
+            if self.noise_p > 0:
+                for w in wires:
+                    qml.DepolarizingChannel(self.noise_p, wires=w)
 
         self.wires_forget = [f"wf{i}" for i in range(n_qubits)]
         self.wires_input = [f"wi{i}" for i in range(n_qubits)]
@@ -59,20 +78,24 @@ class QLSTM(nn.Module):
                 for j in range(self.n_qubits):
                     tgt = (j + i) % self.n_qubits
                     qml.CNOT(wires=[wires_type[j], wires_type[tgt]])
+                    noise(wires_type[j], wires_type[tgt])
             for i in range(self.n_qubits):
                 qml.RX(params[0][i], wires=wires_type[i])
                 qml.RY(params[1][i], wires=wires_type[i])
                 qml.RZ(params[2][i], wires=wires_type[i])
+                noise(wires_type[i], wires_type[i], wires_type[i])
 
         def VQC(features, weights, wires_type):
             qml.templates.AngleEmbedding(features, wires=wires_type)
+            noise(*wires_type)
             qml.layer(ansatz, self.n_qlayers, weights, wires_type=wires_type)
 
         def make_circuit(wires_type, dev):
             def _circuit(inputs, weights):
                 VQC(inputs, weights, wires_type)
                 return [qml.expval(qml.PauliZ(w)) for w in wires_type]
-            return qml.QNode(_circuit, dev, interface="torch")
+            qnode = qml.QNode(_circuit, dev, interface="torch")
+            return qml.set_shots(qnode, shots=shots) if shots else qnode
 
         weight_shapes = {"weights": (n_qlayers, n_vrotations, n_qubits)}
 
@@ -155,7 +178,8 @@ class QLSTMRegressor(nn.Module):
 
     PREFERRED_DEVICE = "cpu"  # see QLSTM.PREFERRED_DEVICE
 
-    def __init__(self, num_features, hidden_size, n_qubits=4, n_qlayers=1, n_vrotations=3):
+    def __init__(self, num_features, hidden_size, n_qubits=4, n_qlayers=1, n_vrotations=3,
+                 noise_p=0.0, shots=None):
         super().__init__()
         self.qlstm = QLSTM(
             input_size=num_features,
@@ -163,6 +187,8 @@ class QLSTMRegressor(nn.Module):
             n_qubits=n_qubits,
             n_qlayers=n_qlayers,
             n_vrotations=n_vrotations,
+            noise_p=noise_p,
+            shots=shots,
             batch_first=True,
         )
         self.linear = nn.Linear(hidden_size, 1)

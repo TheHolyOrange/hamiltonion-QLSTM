@@ -1,0 +1,23 @@
+=== UniEload / Classical LSTM on cpu ===
+features: ['Load_kW', 'Temperature_C', 'Humidity_%', 'Precipitation_mm', 'Wind_Speed_mps', 'Solar_Radiation_Wm2', 'vacation', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+rows ('2025-05-08 04:00:00', '2025-09-30 23:00:00'), splits {'train': ('2025-05-08 04:00:00', '2025-08-18 05:00:00'), 'val': ('2025-08-18 06:00:00', '2025-09-09 02:00:00'), 'test': ('2025-09-09 03:00:00', '2025-09-30 23:00:00')}
+train/val/test windows: 2426/501/501
+model_cfg={'num_features': 11, 'hidden_size': 8} lr=0.01 batch_size=32 epochs<=30 patience=8
+training on device: cpu
+epoch 1/30  train_loss=0.55800  val_loss=0.27584  (0.5s)
+epoch 2/30  train_loss=0.28348  val_loss=0.27207  (0.3s)
+epoch 3/30  train_loss=0.25052  val_loss=0.25968  (0.3s)
+epoch 4/30  train_loss=0.23715  val_loss=0.27446  (0.3s)
+epoch 5/30  train_loss=0.23069  val_loss=0.25406  (0.3s)
+epoch 6/30  train_loss=0.21710  val_loss=0.26641  (0.3s)
+epoch 7/30  train_loss=0.21632  val_loss=0.25682  (0.3s)
+epoch 8/30  train_loss=0.21136  val_loss=0.28843  (0.3s)
+epoch 9/30  train_loss=0.20597  val_loss=0.28486  (0.3s)
+epoch 10/30  train_loss=0.19712  val_loss=0.29007  (0.3s)
+epoch 11/30  train_loss=0.19384  val_loss=0.27122  (0.3s)
+epoch 12/30  train_loss=0.19523  val_loss=0.26415  (0.3s)
+epoch 13/30  train_loss=0.19443  val_loss=0.27001  (0.3s)
+early stopping at epoch 13 (best val_loss=0.25406)
+
+=== Classical LSTM test metrics (kW) ===
+RMSE: 30.657  MAE: 23.886  MAPE: 9.63%  params: 681  epochs: 13  time: 16.0s

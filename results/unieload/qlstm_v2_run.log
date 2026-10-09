@@ -1,0 +1,10 @@
+=== UniEload / QLSTM v2 (scheduler + grad clip) on cpu ===
+model_cfg={'num_features': 11, 'hidden_size': 8, 'n_qubits': 6, 'n_qlayers': 2} lr0=0.01 batch_size=32 epochs<=30 patience=12 grad_clip=1.0 scheduler=ReduceLROnPlateau(factor=0.5,patience=2)
+train/val/test windows: 2426/501/501
+training on device: cpu
+epoch 1/30  train_loss=0.76904  val_loss=0.25999  lr=0.01000  (582.9s)
+epoch 2/30  train_loss=0.36735  val_loss=0.29007  lr=0.01000  (583.2s)
+epoch 3/30  train_loss=0.28955  val_loss=0.27730  lr=0.01000  (584.4s)
+epoch 4/30  train_loss=0.25858  val_loss=0.26090  lr=0.01000  (585.5s)
+  lr reduced: 0.01000 -> 0.00500
+epoch 5/30  train_loss=0.25029  val_loss=0.28696  lr=0.00500  (580.9s)

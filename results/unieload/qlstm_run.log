@@ -1,0 +1,9 @@
+=== UniEload / QLSTM on cpu ===
+features: ['Load_kW', 'Temperature_C', 'Humidity_%', 'Precipitation_mm', 'Wind_Speed_mps', 'Solar_Radiation_Wm2', 'vacation', 'hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+rows ('2025-05-08 04:00:00', '2025-09-30 23:00:00'), splits {'train': ('2025-05-08 04:00:00', '2025-08-18 05:00:00'), 'val': ('2025-08-18 06:00:00', '2025-09-09 02:00:00'), 'test': ('2025-09-09 03:00:00', '2025-09-30 23:00:00')}
+train/val/test windows: 2426/501/501
+model_cfg={'num_features': 11, 'hidden_size': 8, 'n_qubits': 6, 'n_qlayers': 2} lr=0.01 batch_size=32 epochs<=30 patience=8
+training on device: cpu
+epoch 1/30  train_loss=0.77695  val_loss=0.25953  (654.4s)
+epoch 2/30  train_loss=0.38579  val_loss=0.30241  (1735.7s)
+epoch 3/30  train_loss=0.31861  val_loss=0.29432  (641.6s)
