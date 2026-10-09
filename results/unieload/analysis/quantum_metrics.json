@@ -1,0 +1,32 @@
+{
+  "circuit": "QLSTM gate ansatz (AngleEmbedding + layered CNOT/RX-RY-RZ)",
+  "config": {
+    "n_qubits": 6,
+    "n_qlayers": 2
+  },
+  "n_samples": 2000,
+  "n_bins": 75,
+  "expressibility_kl_to_haar": 0.002034676864248344,
+  "entangling_capability_meyer_wallach": 0.9472621052049773,
+  "entangling_capability_std": 0.035013833187660916,
+  "resources": {
+    "n_qubits": 6,
+    "n_layers": 2,
+    "gate_counts": {
+      "AngleEmbedding": 1,
+      "CNOT": 24,
+      "RX": 12,
+      "RY": 12,
+      "RZ": 12
+    },
+    "total_gates": 61,
+    "circuit_depth": 25,
+    "n_vqc_params_per_gate": 36,
+    "n_vqc_params_x4_gates": 144
+  },
+  "model_comparison": {
+    "classical_lstm_n_params": 681,
+    "qlstm_n_params": 329,
+    "note": "expressibility/entangling_capability are circuit-only concepts; not applicable to the classical LSTM (no quantum state involved)."
+  }
+}

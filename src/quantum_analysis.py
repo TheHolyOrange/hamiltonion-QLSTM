@@ -234,7 +234,166 @@ def noise(n_windows=120, shots=(100, 1000, 10000, 100000), ps=(0.001, 0.005, 0.0
     fig.tight_layout(); fig.savefig(f"{PDIR}/qlstm_noise_robustness.png", dpi=150); plt.close(fig)
 
 
+# ----------------------------------------------------- quantum metrics ---
+
+def _qlstm_state_circuit(nq, L):
+    """Statevector-returning version of the QLSTM gate ansatz (src/qlstm_model.py
+    QLSTM.ansatz/VQC), for circuit-characterization metrics that need the full
+    state rather than a gradient or an expectation value."""
+    dev = qml.device("default.qubit", wires=nq)
+
+    @qml.qnode(dev)
+    def c(x, w):
+        qml.AngleEmbedding(x, wires=range(nq))
+        for l in range(L):
+            for k in (1, 2):
+                for j in range(nq):
+                    qml.CNOT([j, (j + k) % nq])
+            for i in range(nq):
+                qml.RX(w[l, 0, i], i); qml.RY(w[l, 1, i], i); qml.RZ(w[l, 2, i], i)
+        return qml.state()
+    return c
+
+
+def _random_draw(nq, L, rng):
+    x = rng.standard_normal(nq)                           # matches training-time feature scale
+    w = rng.uniform(0, 2 * np.pi, size=(L, 3, nq))         # QLSTM's actual TorchLayer init range
+    return x, w
+
+
+def _meyer_wallach(state, n_qubits):
+    """Meyer-Wallach entanglement measure Q in [0,1] for a pure state: 0 for a
+    product state, 1 for maximal multipartite entanglement. Q = 2(1 - mean_k
+    Tr(rho_k^2)), rho_k the single-qubit reduced density matrix of wire k
+    (Meyer & Wallach, J. Math. Phys. 43, 4273 (2002); Brennen 2003 formulation)."""
+    psi = state.reshape([2] * n_qubits)
+    purities = []
+    for k in range(n_qubits):
+        m = np.moveaxis(psi, k, 0).reshape(2, -1)
+        rho_k = m @ m.conj().T
+        purities.append(np.real(np.trace(rho_k @ rho_k)))
+    return float(2 * (1 - np.mean(purities)))
+
+
+def quantum_metrics(n_samples=2000, n_bins=75, seed=1234):
+    """Standard VQC characterization metrics for the trained QLSTM's gate
+    ansatz (Sim, Johnson & Aspuru-Guzik, Adv. Quantum Technol. 2, 1900070
+    (2019)), at its actual (n_qubits=6, n_qlayers=2) configuration:
+
+      expressibility        How uniformly the circuit's reachable states cover
+                             the Hilbert space vs. a Haar-random circuit: KL
+                             divergence between the sampled pairwise-fidelity
+                             distribution and the analytic Haar fidelity
+                             distribution P_Haar(F)=(2^n-1)(1-F)^(2^n-2).
+                             Lower = more expressive (0 = indistinguishable
+                             from Haar-random); an under-parameterized or
+                             overly structured ansatz scores higher.
+      entangling_capability  Mean Meyer-Wallach Q over random draws: how much
+                             multi-qubit entanglement the circuit typically
+                             generates (0 = always separable, 1 = maximal).
+
+    Both are properties of the circuit *family* (AngleEmbedding + the layered
+    CNOT/RX-RY-RZ ansatz), not of one trained weight checkpoint, so x and the
+    gate weights are both drawn fresh per sample -- same convention as
+    barren()'s random-x/random-weight draws, and weights drawn from QLSTM's
+    own TorchLayer default init range (Uniform(0, 2*pi)), i.e. characterizing
+    the ansatz as initialized, before training reshapes the weight
+    distribution.
+    """
+    with open("results/model_config.json") as f:
+        cfg = json.load(f)["model_cfg"]
+    nq, L = cfg["n_qubits"], cfg["n_qlayers"]
+    circuit = _qlstm_state_circuit(nq, L)
+    N = 2 ** nq
+    rng = np.random.default_rng(seed)
+
+    t0 = time.time()
+    states = []
+    for _ in range(n_samples):
+        x, w = _random_draw(nq, L, rng)
+        states.append(circuit(x, w))
+    states = np.stack(states)
+    print(f"[metrics] sampled {n_samples} states ({time.time()-t0:.1f}s)", flush=True)
+
+    # Entangling capability: Meyer-Wallach Q per sampled state.
+    t0 = time.time()
+    q_vals = [_meyer_wallach(s, nq) for s in states]
+    entangling_capability = float(np.mean(q_vals))
+    print(f"[metrics] entangling_capability (Meyer-Wallach Q) = {entangling_capability:.4f} "
+          f"+/- {np.std(q_vals):.4f}  ({time.time()-t0:.1f}s)", flush=True)
+
+    # Expressibility: pairwise fidelities among a fresh set of independent draws
+    # (standard practice, e.g. Sim et al. use ~5000 independently drawn pairs).
+    t0 = time.time()
+    pair_states = []
+    for _ in range(2 * n_samples):
+        x, w = _random_draw(nq, L, rng)
+        pair_states.append(circuit(x, w))
+    pair_states = np.stack(pair_states)
+    psi1, psi2 = pair_states[:n_samples], pair_states[n_samples:]
+    fidelities = np.abs(np.sum(psi1.conj() * psi2, axis=1)) ** 2
+
+    bin_edges = np.linspace(0, 1, n_bins + 1)
+    hist, _ = np.histogram(fidelities, bins=bin_edges, density=False)
+    p_pqc = hist / hist.sum()
+    centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    p_haar_pdf = (N - 1) * (1 - centers) ** (N - 2)
+    p_haar = p_haar_pdf / p_haar_pdf.sum()
+    eps = 1e-12
+    expressibility = float(np.sum(p_pqc * np.log((p_pqc + eps) / (p_haar + eps))))
+    print(f"[metrics] expressibility (KL to Haar, {N}-dim Hilbert space) = {expressibility:.4f} "
+          f"({time.time()-t0:.1f}s)", flush=True)
+
+    # Resource counts (qml.specs) at the trained circuit's actual config.
+    specs = qml.specs(circuit)(*_random_draw(nq, L, rng))
+    resources = {"n_qubits": nq, "n_layers": L,
+                 "gate_counts": dict(specs.resources.gate_types),
+                 "total_gates": specs.resources.num_gates,
+                 "circuit_depth": specs.resources.depth,
+                 "n_vqc_params_per_gate": int(3 * L * nq),  # RX,RY,RZ per qubit per layer
+                 "n_vqc_params_x4_gates": int(4 * 3 * L * nq)}  # QLSTM has 4 such circuits (f,i,c,o)
+
+    with open(f"{OUT}/lstm_metrics.json") as f:
+        lstm_params = json.load(f)["n_params"]
+    with open(f"{OUT}/qlstm_v2_metrics.json") as f:
+        qlstm_params = json.load(f)["n_params"]
+
+    result = {
+        "circuit": "QLSTM gate ansatz (AngleEmbedding + layered CNOT/RX-RY-RZ)",
+        "config": {"n_qubits": nq, "n_qlayers": L},
+        "n_samples": n_samples, "n_bins": n_bins,
+        "expressibility_kl_to_haar": expressibility,
+        "entangling_capability_meyer_wallach": entangling_capability,
+        "entangling_capability_std": float(np.std(q_vals)),
+        "resources": resources,
+        "model_comparison": {
+            "classical_lstm_n_params": lstm_params,
+            "qlstm_n_params": qlstm_params,
+            "note": "expressibility/entangling_capability are circuit-only concepts; "
+                    "not applicable to the classical LSTM (no quantum state involved).",
+        },
+    }
+    _save("quantum_metrics", result)
+    print(f"\n=== QLSTM quantum metrics (n_qubits={nq}, n_qlayers={L}) ===")
+    print(f"expressibility (KL to Haar):     {expressibility:.4f}  (0 = indistinguishable from Haar-random)")
+    print(f"entangling capability (Q):       {entangling_capability:.4f} +/- {np.std(q_vals):.4f}  (0=product, 1=max)")
+    print(f"circuit depth / total gates:     {resources['circuit_depth']} / {resources['total_gates']}")
+    print(f"gate counts:                     {resources['gate_counts']}")
+    print(f"trainable params (1 gate / 4 gates): {resources['n_vqc_params_per_gate']} / {resources['n_vqc_params_x4_gates']}")
+
+    plt.figure(figsize=(7, 4.5))
+    plt.bar(centers, p_pqc, width=1 / n_bins, alpha=0.7, label="QLSTM ansatz (sampled)")
+    plt.plot(centers, p_haar, "r--", linewidth=2, label="Haar-random")
+    plt.xlabel("fidelity F = |<psi1|psi2>|^2"); plt.ylabel("probability")
+    plt.title(f"QLSTM expressibility: fidelity distribution vs. Haar\n"
+              f"(KL divergence = {expressibility:.4f}, n_qubits={nq}, n_qlayers={L})")
+    plt.legend(); plt.tight_layout()
+    plt.savefig(f"{PDIR}/qlstm_expressibility.png", dpi=150); plt.close()
+    return result
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["barren", "landscape", "noise"])
-    {"barren": barren, "landscape": landscape, "noise": noise}[ap.parse_args().what]()
+    ap.add_argument("what", choices=["barren", "landscape", "noise", "metrics"])
+    {"barren": barren, "landscape": landscape, "noise": noise,
+     "metrics": quantum_metrics}[ap.parse_args().what]()
